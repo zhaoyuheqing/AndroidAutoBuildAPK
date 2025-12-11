@@ -20,7 +20,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private var lastPlayTime: Long = 0
     private val playInterval: Long = 500  // 0.5 秒间隔
-    private val shakeThreshold = 12f      // 摇晃阈值
+    private val shakeThreshold = 1.8f      // 摇晃阈值
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
