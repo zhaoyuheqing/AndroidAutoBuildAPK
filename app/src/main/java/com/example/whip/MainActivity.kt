@@ -9,6 +9,7 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.content.Context
 import android.os.SystemClock
+import android.widget.Button
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
@@ -16,9 +17,9 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private var accelerometer: Sensor? = null
 
-    private var lastShakeTime: Long = 0          // 上次播放时间
-    private val shakeInterval: Long = 1000       // 1 秒间隔
-    private val shakeThreshold = 12f             // 摇晃阈值，可调整
+    private var lastShakeTime: Long = 0
+    private val shakeInterval: Long = 1000   // 1 秒
+    private val shakeThreshold = 1.8f        // ← 修复后的正确阈值
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +29,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+
+        // 点击按钮播放（可选）
+        val playButton = findViewById<Button>(R.id.playButton)
+        playButton?.setOnClickListener {
+            mediaPlayer?.start()
+        }
     }
 
     override fun onResume() {
@@ -49,8 +56,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         val y = event.values[1]
         val z = event.values[2]
 
+        // 正确计算 gForce
         val gForce = Math.sqrt((x*x + y*y + z*z).toDouble()) / SensorManager.GRAVITY_EARTH
 
+        // 低阈值才能检测到挥动
         if (gForce > shakeThreshold) {
             val currentTime = SystemClock.elapsedRealtime()
             if (currentTime - lastShakeTime >= shakeInterval) {
@@ -60,9 +69,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         }
     }
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // 不需要处理
-    }
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
     override fun onDestroy() {
         super.onDestroy()
